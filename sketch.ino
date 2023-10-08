@@ -17,6 +17,21 @@ float cal_factor = 3.2; //3.229
 
 HX711 scale;
 
+void fullCalibration() {
+  Serial.println("Performing full calibration");
+  scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
+  scale.set_scale(2280.f); // This value is obtained by calibrating the scale with known weights
+  scale.tare();
+
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print(" Calibration ");
+  lcd.setCursor(0, 1);
+  lcd.print("     Complete     ");
+  delay(200);  // Show calibration is done with a 1-second delay 
+  lcd.clear();
+}
+
 void setup() {
   Serial.begin(9600);
   pinMode(9, OUTPUT);
@@ -36,21 +51,6 @@ void setup() {
   fullCalibration();  // Perform a full calibration at the start
 
   lastTareTime = millis();  // Initialize the last tare time
-}
-
-void fullCalibration() {
-  Serial.println("Performing full calibration");
-  scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
-  scale.set_scale(2280.f); // This value is obtained by calibrating the scale with known weights
-  scale.tare();
-
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print(" Calibration ");
-  lcd.setCursor(0, 1);
-  lcd.print("     Complete     ");
-  delay(200);  // Show calibration is done with a 1-second delay 
-  lcd.clear();
 }
 
 void reTareScale() {
