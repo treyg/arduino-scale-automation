@@ -7,10 +7,10 @@ LiquidCrystal_I2C lcd(0x27, 20, 4);
 const int LOADCELL_DOUT_PIN = 3;
 const int LOADCELL_SCK_PIN = 2;
 
-// Timestamp for the last time the scale was reset
-unsigned long lastResetTime = 0;
-// Interval to reset the scale (20 minutes in milliseconds)
-const unsigned long RESET_INTERVAL = 20 * 60 * 1000;  
+// Timestamp for the last time the scale was tared
+unsigned long lastTareTime = 0;
+// Interval to re-tare the scale (20 minutes in milliseconds)
+const unsigned long TARE_INTERVAL = 20 * 60 * 1000;  
 
 float current_weight = 0;
 float cal_factor = 3.2; //3.229 
@@ -33,14 +33,13 @@ void setup() {
   lcd.setCursor(0, 1);
   lcd.print("     Sensor     ");
   
-  initializeScale();
+  fullCalibration();  // Perform a full calibration at the start
 
-  lastResetTime = millis();  // Initialize the last reset time
+  lastTareTime = millis();  // Initialize the last tare time
 }
 
-void initializeScale() {
-  // Calibration part takes about 10 seconds.
-  Serial.println("Initializing the scale");
+void fullCalibration() {
+  Serial.println("Performing full calibration");
   scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
   scale.set_scale(2280.f); // This value is obtained by calibrating the scale with known weights
   scale.tare();
@@ -51,6 +50,19 @@ void initializeScale() {
   lcd.setCursor(0, 1);
   lcd.print("     Complete     ");
   delay(200);  // Show calibration is done with a 1-second delay 
+  lcd.clear();
+}
+
+void reTareScale() {
+  Serial.println("Re-taring the scale");
+  scale.tare();
+
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print(" Re-Taring ");
+  lcd.setCursor(0, 1);
+  lcd.print("     Complete     ");
+  delay(200);  // Show re-taring is done with a 1-second delay 
   lcd.clear();
 }
 
@@ -105,9 +117,9 @@ void loop() {
     digitalWrite(12, HIGH); // Deactivate relay connected to pin 12
   }
 
-  // Check if it's time to reset the scale
-  if (millis() - lastResetTime >= RESET_INTERVAL) {
-    initializeScale();
-    lastResetTime = millis();  // Update the last reset time
+  // Check if it's time to re-tare the scale
+  if (millis() - lastTareTime >= TARE_INTERVAL) {
+    reTareScale();
+    lastTareTime = millis();  // Update the last tare time
   }
 }
